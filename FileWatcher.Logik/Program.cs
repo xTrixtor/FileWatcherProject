@@ -17,7 +17,6 @@ namespace FileWatcher.Logik
             MainAsync().GetAwaiter().GetResult();
         }
 
-
         private static async Task MainAsync()
         {
             var connectionString = "Data Source=(LocalDb)\\MSSQLLocalDB;Initial Catalog=FileWatcher;Integrated Security=True";
@@ -37,7 +36,6 @@ namespace FileWatcher.Logik
 
             foreach (var sharePath in fileSharePaths)
                 combineListOfFiles.Add(await fileShareSyncService.GetAllFilesFromFileShareAsync(sharePath));
-
 
             foreach (var fileModelList in combineListOfFiles)
             {
@@ -59,32 +57,6 @@ namespace FileWatcher.Logik
 
             Console.WriteLine("Press enter to exit.");
             Console.ReadLine();
-        }
-
-        public static async Task<IEnumerable<FileModel>> GetAllFilesFromFileShareAsync(string fileSharePath)
-        {
-            return await Task.Run(() =>  GetAllFilesFromFileShare(fileSharePath));
-        }
-
-        public static IEnumerable<FileModel> GetAllFilesFromFileShare(string fileSharePath)
-        {
-            var myFileList = new List<FileModel>();
-
-            var directories = Directory.GetDirectories(fileSharePath, "*.*", SearchOption.AllDirectories);
-
-            foreach (var directory in directories)
-            {
-                var files = Directory.GetFiles(directory);
-                var currentDirectory = directory;
-                foreach (var file in files)
-                {
-                    var fileDirectoryParts = file.Split("\\");
-                    var fileName = fileDirectoryParts[fileDirectoryParts.Length - 1];
-                    myFileList.Add(new FileModel { FileName = fileName, FilePath = $"{currentDirectory}" });
-                }
-            }
-
-            return myFileList;
         }
     }
 }

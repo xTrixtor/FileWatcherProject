@@ -45,7 +45,6 @@ namespace FileWatcher.Logik.DataStore
                     }); 
                 }
             }
-
             return myFileList;
         }
 

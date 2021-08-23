@@ -37,8 +37,6 @@ namespace FileWatcher.Logik.DataStore
 
             _fileWatcher.NotifyFilter = NotifyFilters.Attributes
                                         | NotifyFilters.CreationTime
-                                        | NotifyFilters.DirectoryName
-                                        | NotifyFilters.FileName
                                         | NotifyFilters.LastAccess
                                         | NotifyFilters.LastWrite
                                         | NotifyFilters.Security
@@ -89,6 +87,7 @@ namespace FileWatcher.Logik.DataStore
 
             var eventMessage = String.Empty;
             eventMessage = $"Die Datei: {e.Name} wurde gelöscht";
+
             await _eventLogger.CreateEventLogAsyc(
                 WatcherChangeTypes.Deleted,
                 new FileSystemWatcherEvents { FileSystemEventObject = e },

@@ -31,9 +31,4 @@ namespace FileWatcher.Logik.DataStore
             return await Task.Run(() => Encoding.Default.GetString(hashBytes));
         }
     }        
-
-
-
-       
-    
 }

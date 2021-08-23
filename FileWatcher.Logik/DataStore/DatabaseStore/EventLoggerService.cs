@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using FileWatcher.Logik.DataStore.FileStore;
 using FileWatcher.Logik.Models;
 using FileWatcher.Logik.Models.FileWatcher;
 using System;
@@ -13,12 +14,13 @@ namespace FileWatcher.Logik.DataStore
     public class EventLoggerService
     {
         private readonly string _connectionString;
+        private FileService _fileService;
 
-        public EventLoggerService(string connectionString)
+        public EventLoggerService(string connectionString, FileService fileService)
         {
             this._connectionString = connectionString;
+            this._fileService = fileService;
         }
-
 
         private readonly string GetFileIdSql = "Select * From [FileWatcher].[File] Where FileName = @FileName And FilePath = @FilePath";
 
@@ -30,20 +32,24 @@ namespace FileWatcher.Logik.DataStore
         private readonly string CreateErrorLogSql = "[FileWatcher].[CreateErrorLog] @ErrorMessage, @InnerExceptionMessage, @TargetSite";
 
 
-        public async Task<FileModel> GetFileIdAsync(FileSystemWatcherEvents fileSystemWatcherEvents)
+        public async Task<FileModel> GetFileAsync(FileSystemWatcherEvents fileSystemWatcherEvents)
         {
             if (fileSystemWatcherEvents.FileSystemEventObject != null)
             {
-                var fileModel = GetParameterReadyForSqlStatement(fileSystemWatcherEvents);
-                
-                using(var con = new SqlConnection(_connectionString))
-                    return await con.QueryFirstOrDefaultAsync<FileModel>(GetFileIdSql, new FileModel{ FileName = fileModel.FileName, FilePath = fileModel.FilePath });
+                var filePath = await _fileService.GetFilePathOfEventPathAsync(fileSystemWatcherEvents);
+                var fileName = await _fileService.GetFileNameOfEventAsync(fileSystemWatcherEvents);
+
+                using (var con = new SqlConnection(_connectionString))
+                    return await con.QueryFirstOrDefaultAsync<FileModel>(GetFileIdSql, new FileModel { FileName = fileName, FilePath = fileSystemWatcherEvents.FileSystemEventObject.FullPath });
+
             }
             else 
             {
-                var fileModel = GetParameterReadyForSqlStatement(fileSystemWatcherEvents);
+                var filePath = await _fileService.GetFilePathOfEventPathAsync(fileSystemWatcherEvents);
+                var fileName = await _fileService.GetFileNameOfEventAsync(fileSystemWatcherEvents);
+
                 using (var con = new SqlConnection(_connectionString))
-                    return await con.QueryFirstOrDefaultAsync<FileModel>(GetFileIdSql, new { FileName = fileModel.FileName, FilePath = fileModel.FilePath });
+                    return await con.QueryFirstOrDefaultAsync<FileModel>(GetFileIdSql, new { FileName = fileName, FilePath = filePath });
             }
             
         }
@@ -52,9 +58,9 @@ namespace FileWatcher.Logik.DataStore
         {
             var sqlStatement = String.Empty;
             sqlStatement = GetEventSqlStatment(eventTypeEnumn);
+            var fileModel = await GetFileAsync(fileWatcherEvents);
 
-            var fileModel = await GetFileIdAsync(fileWatcherEvents);
-            var eventString = await GetEventTypeStringValueAsync(eventTypeEnumn);
+            var eventString =  await _fileService.GetEventTypeStringValueAsync(eventTypeEnumn);
 
             using (var con = new SqlConnection(_connectionString))
             {
@@ -86,51 +92,5 @@ namespace FileWatcher.Logik.DataStore
                     throw new Exception("Es wurde kein Event übergeben!");
             }
         }
-
-        public FileModel GetParameterReadyForSqlStatement(FileSystemWatcherEvents fileWatcherEvents)
-        {
-            if (fileWatcherEvents.FileSystemEventObject != null)
-            {
-                var fileName = String.Empty;
-                var fileNameParts = fileWatcherEvents.FileSystemEventObject.Name.Split('\\');
-                fileName = fileNameParts[fileNameParts.Length - 1];
-                var filePath = fileWatcherEvents.FileSystemEventObject.FullPath;
-                return new FileModel { FileName = fileName, FilePath = filePath };
-            }
-            else
-            {
-                var fileName = String.Empty;
-                var fileNameParts = fileWatcherEvents.RenameEventObject.Name.Split('\\');
-                fileName = fileNameParts[fileNameParts.Length - 1];
-
-                var filePath = fileWatcherEvents.RenameEventObject.FullPath;
-                filePath = Path.Combine(filePath, "");
-
-                return new FileModel { FileName = fileName, FilePath = filePath };
-            }
-        }
-
-        private async Task<string> GetEventTypeStringValueAsync(WatcherChangeTypes eventTypeEnumn)
-        {
-            return await Task.Run(() => GetEventTypeStringValue(eventTypeEnumn));
-        }
-
-        private string GetEventTypeStringValue(WatcherChangeTypes eventTypeEnumn)
-        {
-            switch (eventTypeEnumn)
-            {
-                case WatcherChangeTypes.Created:
-                    return "Created";
-                case WatcherChangeTypes.Deleted:
-                    return "Deleted";
-                case WatcherChangeTypes.Changed:
-                    return "Changed";
-                case WatcherChangeTypes.Renamed:
-                    return "Renamed";
-                default:
-                    throw new Exception("Es wurde kein Event übergeben!");
-            }
-        }
-
     }
 }

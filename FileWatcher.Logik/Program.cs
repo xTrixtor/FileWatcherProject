@@ -1,4 +1,5 @@
 ﻿using FileWatcher.Logik.DataStore;
+using FileWatcher.Logik.DataStore.FileStore;
 using FileWatcher.Logik.Models;
 using FileWatcher.Logik.Models.FileWatcher;
 using System;
@@ -23,7 +24,8 @@ namespace FileWatcher.Logik
 
             //Services
             ReshService reshService = new ReshService();
-            EventLoggerService eventLogger = new EventLoggerService(connectionString);
+            FileService fileService = new FileService();
+            EventLoggerService eventLogger = new EventLoggerService(connectionString,fileService);
             FileSyncService fileSync = new FileSyncService(connectionString);
             FileShareSyncService fileShareSyncService = new FileShareSyncService(reshService);
             DatabaseService databaseService = new DatabaseService(connectionString);

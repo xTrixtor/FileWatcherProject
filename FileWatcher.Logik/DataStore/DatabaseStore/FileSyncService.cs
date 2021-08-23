@@ -3,6 +3,7 @@ using FileWatcher.Logik.Models.FileWatcher;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,6 +41,28 @@ namespace FileWatcher.Logik.DataStore
                 return await con.QueryAsync<string>(UpdateFileSharePathSql, new FileShareModel
                 { ID = fileShare.ID, FileShareName = fileShare.FileShareName, FileSharePath = fileShare.FileSharePath });
         }
+        public async Task<string> GetEventTypeStringValueAsync(WatcherChangeTypes eventTypeEnumn)
+        {
+            return await Task.Run(() => GetEventTypeStringValue(eventTypeEnumn));
+        }
+
+        private string GetEventTypeStringValue(WatcherChangeTypes eventTypeEnumn)
+        {
+            switch (eventTypeEnumn)
+            {
+                case WatcherChangeTypes.Created:
+                    return "Created";
+                case WatcherChangeTypes.Deleted:
+                    return "Deleted";
+                case WatcherChangeTypes.Changed:
+                    return "Changed";
+                case WatcherChangeTypes.Renamed:
+                    return "Renamed";
+                default:
+                    throw new Exception("Es wurde kein Event übergeben!");
+            }
+        }
+      
 
     }
 }

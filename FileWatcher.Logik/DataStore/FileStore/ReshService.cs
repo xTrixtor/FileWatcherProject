@@ -6,11 +6,9 @@ using System.Text;
 
 namespace FileWatcher.Logik.DataStore
 {
-    class ReshService
+    public class ReshService
     {
         private SHA256 _sha256 = SHA256.Create();
-
-        
         public async Task<string> RunReshAsync(string filePath)
         {
             var fileBytes = await ReadFileAsync(filePath);

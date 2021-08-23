@@ -42,7 +42,7 @@ namespace FileWatcher.Logik
             foreach (var fileModelList in combineListOfFiles)
             {
                 foreach (var fileModel in fileModelList)
-                    await databaseService.CreateFileLogAsync(fileModel);
+                    await databaseService.CreateFileAsync(fileModel);
             }
 
             //FileWatcher 

@@ -31,29 +31,6 @@ namespace FileWatcher.Logik.DataStore
 
         private readonly string CreateErrorLogSql = "[FileWatcher].[CreateErrorLog] @ErrorMessage, @InnerExceptionMessage, @TargetSite";
 
-
-        public async Task<FileModel> GetFileAsync(FileSystemWatcherEvents fileSystemWatcherEvents)
-        {
-            if (fileSystemWatcherEvents.FileSystemEventObject != null)
-            {
-                var filePath = await _fileService.GetFilePathOfEventPathAsync(fileSystemWatcherEvents);
-                var fileName = await _fileService.GetFileNameOfEventAsync(fileSystemWatcherEvents);
-
-                using (var con = new SqlConnection(_connectionString))
-                    return await con.QueryFirstOrDefaultAsync<FileModel>(GetFileIdSql, new FileModel { FileName = fileName, FilePath = fileSystemWatcherEvents.FileSystemEventObject.FullPath });
-
-            }
-            else 
-            {
-                var filePath = await _fileService.GetFilePathOfEventPathAsync(fileSystemWatcherEvents);
-                var fileName = await _fileService.GetFileNameOfEventAsync(fileSystemWatcherEvents);
-
-                using (var con = new SqlConnection(_connectionString))
-                    return await con.QueryFirstOrDefaultAsync<FileModel>(GetFileIdSql, new { FileName = fileName, FilePath = filePath });
-            }
-            
-        }
-
         public async Task CreateEventLogAsyc(WatcherChangeTypes eventTypeEnumn, FileSystemWatcherEvents fileWatcherEvents, string eventMessage )
         {
             var sqlStatement = String.Empty;
@@ -74,6 +51,27 @@ namespace FileWatcher.Logik.DataStore
             {
                 await con.ExecuteAsync(CreateErrorLogSql, new ErrorLogModel { ErrorMessage = ex.Message, InnerExceptionMessage = ex.InnerException.Message, TargetSite = ex.TargetSite.Name  });
             }
+        }
+
+        public async Task<FileModel> GetFileAsync(FileSystemWatcherEvents fileSystemWatcherEvents)
+        {
+            if (fileSystemWatcherEvents.FileSystemEventObject != null)
+            {
+                var filePath = await _fileService.GetFilePathOfEventPathAsync(fileSystemWatcherEvents);
+                var fileName = await _fileService.GetFileNameOfEventAsync(fileSystemWatcherEvents);
+
+                using (var con = new SqlConnection(_connectionString))
+                    return await con.QueryFirstOrDefaultAsync<FileModel>(GetFileIdSql, new FileModel { FileName = fileName, FilePath = fileSystemWatcherEvents.FileSystemEventObject.FullPath });
+            }
+            else
+            {
+                var filePath = await _fileService.GetFilePathOfEventPathAsync(fileSystemWatcherEvents);
+                var fileName = await _fileService.GetFileNameOfEventAsync(fileSystemWatcherEvents);
+
+                using (var con = new SqlConnection(_connectionString))
+                    return await con.QueryFirstOrDefaultAsync<FileModel>(GetFileIdSql, new { FileName = fileName, FilePath = filePath });
+            }
+
         }
 
         public string GetEventSqlStatment(WatcherChangeTypes eventTypeEnumn)

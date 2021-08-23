@@ -57,6 +57,7 @@ namespace FileWatcher.Logik.DataStore
             {
                 var eventMessage = String.Empty;
                 eventMessage = $"Die Datei |{e.Name}| wurde geändert";
+
                 await _eventLogger.CreateEventLogAsyc(
                     WatcherChangeTypes.Changed,
                     new FileSystemWatcherEvents { FileSystemEventObject = e },
@@ -64,7 +65,6 @@ namespace FileWatcher.Logik.DataStore
             }
             else
             { }
-            
         }
         private async static void OnCreateFile(object sender, FileSystemEventArgs e)
         {
@@ -74,6 +74,7 @@ namespace FileWatcher.Logik.DataStore
 
             var eventMessage = String.Empty;
             eventMessage = $"Die Datei: |{e.Name}| wurde auf folgenden Pfad hinterlegt: {e.FullPath}";
+
             await _eventLogger.CreateEventLogAsyc(
                 WatcherChangeTypes.Created,
                 new FileSystemWatcherEvents { FileSystemEventObject = e },
@@ -102,6 +103,7 @@ namespace FileWatcher.Logik.DataStore
 
             var eventMessage = String.Empty;
             eventMessage = $"Die Datei: {e.Name} wurde gelöscht";
+
             await _eventLogger.CreateEventLogAsyc(
                 WatcherChangeTypes.Renamed,
                 new FileSystemWatcherEvents { FileSystemEventObject = e },

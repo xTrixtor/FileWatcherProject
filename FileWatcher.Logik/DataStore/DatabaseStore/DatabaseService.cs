@@ -15,10 +15,11 @@ namespace FileWatcher.Logik.DataStore
             _connectionString = connectionString;
         }
         private readonly string CreateFileSql = "[FileWatcher].[CreateFile] @HashString, @FileName, @FilePath, @FileType";
-        private readonly string RenameFileSql = "[FileWatcher].[RenameFile] @HastString, @FileName, @FilePath";
+        private readonly string RenameFileSql = "[FileWatcher].[RenameFile] @HashString, @FileName, @FilePath";
+        private readonly string DeleteFileSql = "[FileWatcher].[DeleteFile] @HashString";
 
 
-        public async Task CreateFileLogAsync(FileModel fileModel)
+        public async Task CreateFileAsync(FileModel fileModel)
         {
             using (var con = new SqlConnection(_connectionString))
             {
@@ -31,7 +32,7 @@ namespace FileWatcher.Logik.DataStore
             }
         }
 
-        public async Task RenameFileLogAsync(FileModel fileModel)
+        public async Task RenameFileAsync(FileModel fileModel)
         {
             using (var con = new SqlConnection(_connectionString))
             {
@@ -39,6 +40,17 @@ namespace FileWatcher.Logik.DataStore
                     HashString = fileModel.HashString,
                     FileName = fileModel.FileName, 
                     FilePath = fileModel.FilePath 
+                });
+            }
+        }
+
+        public async Task DelteFile(FileModel fileModel)
+        {
+            using (var con = new SqlConnection(_connectionString))
+            {
+                await con.ExecuteAsync(DeleteFileSql, new
+                {
+                    HashString = fileModel.HashString
                 });
             }
         }
